@@ -61,9 +61,11 @@
         <p>&copy; 2024 Student Management System | All Rights Reserved</p>
     </footer>
 
+    <!-- JavaScript -->
     <script>
         let selectedStudentId = null;
 
+        // Function to show student details
         function showStudentDetails(studentId) {
             const student = students.find(s => s.id === studentId);
             if (student) {
@@ -76,6 +78,7 @@
             }
         }
 
+        // Function to upload file using pre-signed URL
         async function uploadFile() {
             const fileInput = document.getElementById("fileInput");
             const status = document.getElementById("status");
@@ -89,33 +92,39 @@
             status.innerText = "Uploading...";
             status.style.color = "#F39C12";
 
-            const response = await fetch("/generate-url", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    file_name: `student_${selectedStudentId}_${file.name}`,
-                    file_type: file.type
-                })
-            });
+            try {
+                // Step 1: Generate Pre-signed URL
+                const response = await fetch("/generate-url", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        file_name: `student_${selectedStudentId}_${file.name}`,
+                        file_type: file.type
+                    })
+                });
 
-            const data = await response.json();
+                const data = await response.json();
 
-            if (!data.url) {
-                status.innerText = "Failed to get pre-signed URL!";
-                status.style.color = "#E74C3C";
-                return;
-            }
+                if (!data.url) {
+                    throw new Error("Failed to get pre-signed URL!");
+                }
 
-            const upload = await fetch(data.url, {
-                method: "PUT",
-                body: file,
-                headers: { "Content-Type": file.type }
-            });
+                // Step 2: Upload File to S3
+                const upload = await fetch(data.url, {
+                    method: "PUT",
+                    body: file,
+                    headers: { "Content-Type": file.type }
+                });
 
-            if (upload.ok) {
-                status.innerText = "Photo uploaded successfully!";
-                status.style.color = "#27AE60";
-            } else {
+                if (upload.ok) {
+                    status.innerText = "Photo uploaded successfully!";
+                    status.style.color = "#27AE60";
+                    document.getElementById("profileImage").src = data.url.split("?")[0];
+                } else {
+                    throw new Error("Upload failed!");
+                }
+            } catch (error) {
+                console.error("Error:", error);
                 status.innerText = "Upload failed!";
                 status.style.color = "#E74C3C";
             }
