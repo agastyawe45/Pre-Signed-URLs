@@ -32,6 +32,7 @@ def generate_presigned_url():
                 "Key": file_name,
                 "ContentType": file_type
             },
+            HttpMethod="PUT",
             ExpiresIn=300
         )
         return jsonify({"url": presigned_url})
