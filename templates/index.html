@@ -71,10 +71,11 @@
             if (student) {
                 document.getElementById("studentName").innerText = student.name;
                 document.getElementById("profileImage").src = "https://via.placeholder.com/200";
-                selectedStudentId = student.id;
-
+                selectedStudentId = student.id; // Ensure this is correctly assigned
                 document.getElementById("studentProfile").classList.remove("hidden");
                 document.getElementById("status").innerText = "";
+            } else {
+                selectedStudentId = null; // Clear selectedStudentId if no valid student
             }
         }
 
@@ -84,8 +85,8 @@
             const status = document.getElementById("status");
             const file = fileInput.files[0];
 
-            if (!file) {
-                alert("Please select a file!");
+            if (!file || !selectedStudentId) {
+                alert("Please select a student and a file!");
                 return;
             }
 
