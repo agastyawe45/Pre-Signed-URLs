@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Profiles</title>
+    <style>
+        /* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header */
+.header {
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    text-align: center;
+    padding: 30px 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+.header h1 {
+    margin-bottom: 10px;
+    font-size: 2.5em;
+    letter-spacing: 1px;
+    animation: fadeIn 1s ease;
+}
+
+.header p {
+    font-size: 1.1em;
+    animation: fadeIn 1.5s ease;
+}
+
+/* Page Layout */
+.page-container {
+    display: flex;
+    margin-top: 120px; /* Adjust based on your header height */
+    height: calc(100vh - 140px);
+    background-color: #f9f9f9;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 250px;
+    background-color: #2C3E50;
+    color: white;
+    height: 100%;
+    position: fixed;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    transition: width 0.3s ease;
+}
+
+.sidebar h2 {
+    margin-bottom: 20px;
+    font-size: 1.8em;
+    text-align: center;
+    color: #ECF0F1;
+}
+
+.sidebar ul {
+    list-style: none;
+    width: 100%;
+    padding: 0 10px;
+}
+
+.sidebar ul li {
+    padding: 10px 15px;
+    margin: 5px 0;
+    cursor: pointer;
+    border-radius: 5px;
+    color: #ECF0F1;
+    font-size: 1em;
+    text-align: left;
+    transition: background 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar ul li:hover {
+    background-color: #34495E;
+    transform: translateX(8px);
+}
+
+.sidebar ul li.active {
+    background-color: #6a11cb;
+    font-weight: bold;
+    color: #ffffff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* Main Content */
+.content {
+    flex: 1;
+    margin-left: 250px; /* Space for the sidebar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-card {
+    background: #fff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.profile-card:hover {
+    transform: scale(1.02);
+}
+
+.profile-image img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    margin-bottom: 15px;
+}
+
+.profile-info h2 {
+    margin-bottom: 10px;
+}
+
+input[type="file"] {
+    margin: 10px 0;
+}
+
+button {
+    background-color: #6a11cb;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #2575fc;
+}
+
+.status {
+    margin-top: 10px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Footer */
+.footer {
+    background-color: #2C3E50;
+    color: white;
+    text-align: center;
+    padding: 10px 0;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    0% { opacity: 0; transform: translateY(-20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 200px;
+    }
+    .content {
+        margin-left: 200px;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        width: 100px;
+    }
+    .sidebar h2 {
+        font-size: 1.2em;
+    }
+    .sidebar ul li {
+        font-size: 0.9em;
+        padding: 8px;
+    }
+    .content {
+        margin-left: 100px;
+    }
+}
+
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-container">
+            <h1>📚 Student Profiles</h1>
+            <p>Manage and upload profile photos for students with ease.</p>
+        </div>
+    </header>
+
+    <!-- Page Container -->
+    <div class="page-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Students</h2>
+            <ul id="studentList">
+                <script>
+                    const students = [
+                        { id: 1, name: "Alice Johnson" },
+                        { id: 2, name: "Bob Smith" },
+                        { id: 3, name: "Charlie Brown" },
+                        { id: 4, name: "David Wilson" },
+                        { id: 5, name: "Ella Davis" },
+                        { id: 6, name: "Frank Miller" },
+                        { id: 7, name: "Grace Taylor" }
+                    ];
+
+                    students.forEach(student => {
+                        document.write(`<li onclick="showStudentDetails(${student.id})">${student.name}</li>`);
+                    });
+                </script>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="content">
+            <div id="studentProfile" class="profile-card hidden">
+                <div class="profile-image">
+                    <img id="profileImage" src="https://via.placeholder.com/200" alt="Profile Photo">
+                </div>
+                <div class="profile-info">
+                    <h2 id="studentName"></h2>
+                    <p>Select a photo to upload for this student:</p>
+                    <input type="file" id="fileInput" />
+                    <button onclick="uploadFile()">Upload Photo</button>
+                    <p id="status" class="status"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 Student Management System | All Rights Reserved</p>
+    </footer>
+
+    <script>
+        let selectedStudentId = null;
+
+        function showStudentDetails(studentId) {
+            const student = students.find(s => s.id === studentId);
+            if (student) {
+                document.getElementById("studentName").innerText = student.name;
+                document.getElementById("profileImage").src = "https://via.placeholder.com/200";
+                selectedStudentId = student.id;
+
+                document.getElementById("studentProfile").classList.remove("hidden");
+                document.getElementById("status").innerText = "";
+            }
+        }
+
+        async function uploadFile() {
+            const fileInput = document.getElementById("fileInput");
+            const status = document.getElementById("status");
+            const file = fileInput.files[0];
+
+            if (!file) {
+                alert("Please select a file!");
+                return;
+            }
+
+            status.innerText = "Uploading...";
+            status.style.color = "#F39C12";
+
+            const response = await fetch("/generate-url", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    file_name: `student_${selectedStudentId}_${file.name}`,
+                    file_type: file.type
+                })
+            });
+
+            const data = await response.json();
+
+            if (!data.url) {
+                status.innerText = "Failed to get pre-signed URL!";
+                status.style.color = "#E74C3C";
+                return;
+            }
+
+            const upload = await fetch(data.url, {
+                method: "PUT",
+                body: file,
+                headers: { "Content-Type": file.type }
+            });
+
+            if (upload.ok) {
+                status.innerText = "Photo uploaded successfully!";
+                status.style.color = "#27AE60";
+            } else {
+                status.innerText = "Upload failed!";
+                status.style.color = "#E74C3C";
+            }
+        }
+    </script>
+</body>
+</html>
