@@ -32,11 +32,10 @@
                         { id: 7, name: "Grace Taylor" }
                     ];
 
-                    let selectedStudent = students[0];
-                    window.onload = () => showStudentDetails(selectedStudent.id);
+                    window.onload = () => showStudentDetails(students[0].id);
 
                     students.forEach(student => {
-                        document.write(`<li onclick="showStudentDetails(${student.id})">${student.name}</li>`);
+                        document.write(`<li id="student-${student.id}" onclick="showStudentDetails(${student.id})">${student.name}</li>`);
                     });
                 </script>
             </ul>
@@ -68,15 +67,26 @@
     <script>
         let selectedStudent = null;
 
+        // Highlight the selected student in the sidebar
+        function highlightSelectedStudent(studentId) {
+            const studentListItems = document.querySelectorAll("#studentList li");
+            studentListItems.forEach(item => item.classList.remove("active"));
+
+            const selectedItem = document.getElementById(`student-${studentId}`);
+            if (selectedItem) {
+                selectedItem.classList.add("active");
+            }
+        }
+
         // Function to show student details
         function showStudentDetails(studentId) {
             const student = students.find(s => s.id === studentId);
             if (student) {
+                selectedStudent = student;
                 document.getElementById("studentName").innerText = student.name;
                 document.getElementById("profileImage").src = "https://via.placeholder.com/200";
-                selectedStudent = student;
-
                 document.getElementById("status").innerText = "";
+                highlightSelectedStudent(studentId);
             }
         }
 
@@ -91,7 +101,7 @@
                 return;
             }
 
-            status.innerText = "Uploading...";
+            status.innerText = "Generating pre-signed URL...";
             status.style.color = "#F39C12";
 
             try {
@@ -113,18 +123,19 @@
                 }
 
                 // Step 2: Upload to CloudFront
-                const upload = await fetch(data.url, {
+                status.innerText = "Uploading file...";
+                const uploadResponse = await fetch(data.url, {
                     method: "PUT",
                     body: file,
                     headers: { "Content-Type": file.type },
                 });
 
-                if (upload.ok) {
+                if (uploadResponse.ok) {
                     status.innerText = "Photo uploaded successfully!";
                     status.style.color = "#27AE60";
                     document.getElementById("profileImage").src = data.url.split("?")[0];
                 } else {
-                    throw new Error("Upload failed!");
+                    throw new Error("File upload failed!");
                 }
             } catch (error) {
                 console.error("Error:", error);
@@ -132,6 +143,14 @@
                 status.style.color = "#E74C3C";
             }
         }
+
+        // Automatically select the first student on page load
+        window.onload = () => {
+            const firstStudent = students[0];
+            if (firstStudent) {
+                showStudentDetails(firstStudent.id);
+            }
+        };
     </script>
 </body>
 </html>
