@@ -1,52 +1,60 @@
 import os
-import boto3
-import logging
+import rsa
+from datetime import datetime, timedelta
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from datetime import datetime, timedelta
+from botocore.signers import CloudFrontSigner
 
 app = Flask(__name__)
 CORS(app, supports_credentials=True, origins="*")
 
-# AWS Configurations
+# CloudFront and AWS Configuration
+PRIVATE_KEY_PATH = os.getenv("PRIVATE_KEY_PATH", "./private_key.pem")
+KEY_PAIR_ID = os.getenv("CLOUDFRONT_KEY_ID", "<your-key-pair-id>")
+CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN", "<your-cloudfront-domain>")
 S3_BUCKET = os.getenv("S3_BUCKET", "default-s3-bucket")
-CLOUDFRONT_DOMAIN = os.getenv("CLOUDFRONT_DOMAIN")  # E.g., d123abc.cloudfront.net
-REGION = os.getenv("AWS_REGION", "us-west-2")
 
-# Initialize AWS Clients
-s3 = boto3.client("s3", region_name=REGION)
+# Function to fetch the private key
+def fetch_private_key():
+    try:
+        with open(PRIVATE_KEY_PATH, "rb") as key_file:
+            return key_file.read()
+    except FileNotFoundError:
+        raise Exception(f"Private key file not found at {PRIVATE_KEY_PATH}")
 
-# Logging setup
-logging.basicConfig(level=logging.INFO)
+# Function to sign messages with the private key
+def rsa_signer(message):
+    private_key = fetch_private_key()
+    key = rsa.PrivateKey.load_pkcs1(private_key)
+    return rsa.sign(message, key, "SHA-1")
+
+# Generate CloudFront signed URL
+@app.route("/generate-url", methods=["POST"])
+def generate_signed_url():
+    data = request.json
+    student_name = data.get("student_name")
+    file_name = data.get("file_name")
+    file_type = data.get("file_type")
+
+    # Construct the S3 key and CloudFront URL
+    s3_key = f"{student_name}/{file_name}"
+    cloudfront_url = f"{CLOUDFRONT_DOMAIN}/{s3_key}"
+
+    signer = CloudFrontSigner(KEY_PAIR_ID, rsa_signer)
+    expiration_time = datetime.utcnow() + timedelta(seconds=3600)
+
+    try:
+        signed_url = signer.generate_presigned_url(
+            cloudfront_url, date_less_than=expiration_time
+        )
+        return jsonify({"url": signed_url, "s3_key": s3_key})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route("/")
 @app.route("/index.html")
 def index():
     return render_template("index.html")
-
-@app.route("/generate-url", methods=["POST"])
-def generate_presigned_url():
-    try:
-        data = request.json
-        student_name = data.get("student_name")
-        file_name = data.get("file_name")
-        file_type = data.get("file_type")
-
-        if not all([student_name, file_name, file_type]):
-            return jsonify({"error": "Missing required parameters"}), 400
-
-        # Construct S3 key based on student name and file name
-        s3_key = f"{student_name}/{file_name}"
-
-        # Generate pre-signed URL for CloudFront
-        expires_at = datetime.utcnow() + timedelta(seconds=300)
-        cloudfront_url = f"https://{CLOUDFRONT_DOMAIN}/{s3_key}"
-
-        logging.info(f"Generated CloudFront URL: {cloudfront_url}")
-        return jsonify({"url": cloudfront_url, "s3_key": s3_key})
-    except Exception as e:
-        logging.error(f"Error generating pre-signed URL: {e}")
-        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
