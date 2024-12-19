@@ -32,6 +32,9 @@
                         { id: 7, name: "Grace Taylor" }
                     ];
 
+                    let selectedStudent = students[0];
+                    window.onload = () => showStudentDetails(selectedStudent.id);
+
                     students.forEach(student => {
                         document.write(`<li onclick="showStudentDetails(${student.id})">${student.name}</li>`);
                     });
@@ -61,30 +64,23 @@
         <p>&copy; 2024 Student Management System | All Rights Reserved</p>
     </footer>
 
+    <!-- JavaScript -->
     <script>
-        let selectedStudentId = null;
+        let selectedStudent = null;
 
-        // Show the first student's details on page load
-        window.onload = () => {
-            showStudentDetails(students[0].id);
-        };
-
+        // Function to show student details
         function showStudentDetails(studentId) {
             const student = students.find(s => s.id === studentId);
             if (student) {
                 document.getElementById("studentName").innerText = student.name;
                 document.getElementById("profileImage").src = "https://via.placeholder.com/200";
-                selectedStudentId = student.id;
-
-                // Highlight selected student in the sidebar
-                const studentList = document.getElementById("studentList").children;
-                for (let li of studentList) li.classList.remove("active");
-                studentList[studentId - 1].classList.add("active");
+                selectedStudent = student;
 
                 document.getElementById("status").innerText = "";
             }
         }
 
+        // Function to upload file using pre-signed URL
         async function uploadFile() {
             const fileInput = document.getElementById("fileInput");
             const status = document.getElementById("status");
@@ -99,15 +95,15 @@
             status.style.color = "#F39C12";
 
             try {
-                // Step 1: Generate Pre-signed URL
+                // Step 1: Get CloudFront Pre-signed URL
                 const response = await fetch("/generate-url", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        student_name: students.find(s => s.id === selectedStudentId).name,
+                        student_name: selectedStudent.name,
                         file_name: file.name,
-                        file_type: file.type
-                    })
+                        file_type: file.type,
+                    }),
                 });
 
                 const data = await response.json();
@@ -116,11 +112,11 @@
                     throw new Error("Failed to get pre-signed URL!");
                 }
 
-                // Step 2: Upload File to CloudFront (via Pre-Signed URL)
+                // Step 2: Upload to CloudFront
                 const upload = await fetch(data.url, {
                     method: "PUT",
                     body: file,
-                    headers: { "Content-Type": file.type }
+                    headers: { "Content-Type": file.type },
                 });
 
                 if (upload.ok) {
