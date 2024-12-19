@@ -41,7 +41,7 @@
 
         <!-- Main Content -->
         <div class="content">
-            <div id="studentProfile" class="profile-card hidden">
+            <div id="studentProfile" class="profile-card">
                 <div class="profile-image">
                     <img id="profileImage" src="https://via.placeholder.com/200" alt="Profile Photo">
                 </div>
@@ -61,32 +61,33 @@
         <p>&copy; 2024 Student Management System | All Rights Reserved</p>
     </footer>
 
-    <!-- JavaScript -->
     <script>
         let selectedStudentId = null;
 
-        // Function to show student details
+        // Show the first student's details on page load
+        window.onload = () => {
+            showStudentDetails(students[0].id);
+        };
+
         function showStudentDetails(studentId) {
             const student = students.find(s => s.id === studentId);
             if (student) {
                 document.getElementById("studentName").innerText = student.name;
                 document.getElementById("profileImage").src = "https://via.placeholder.com/200";
-                selectedStudentId = student.id; // Ensure this is correctly assigned
+                selectedStudentId = student.id;
+
                 document.getElementById("studentProfile").classList.remove("hidden");
                 document.getElementById("status").innerText = "";
-            } else {
-                selectedStudentId = null; // Clear selectedStudentId if no valid student
             }
         }
 
-        // Function to upload file using pre-signed URL
         async function uploadFile() {
             const fileInput = document.getElementById("fileInput");
             const status = document.getElementById("status");
             const file = fileInput.files[0];
 
-            if (!file || !selectedStudentId) {
-                alert("Please select a student and a file!");
+            if (!file) {
+                alert("Please select a file!");
                 return;
             }
 
@@ -99,7 +100,8 @@
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        file_name: `student_${selectedStudentId}_${file.name}`,
+                        student_name: students.find(s => s.id === selectedStudentId).name,
+                        file_name: file.name,
                         file_type: file.type
                     })
                 });
