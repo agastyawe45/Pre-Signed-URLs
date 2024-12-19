@@ -76,7 +76,11 @@
                 document.getElementById("profileImage").src = "https://via.placeholder.com/200";
                 selectedStudentId = student.id;
 
-                document.getElementById("studentProfile").classList.remove("hidden");
+                // Highlight selected student in the sidebar
+                const studentList = document.getElementById("studentList").children;
+                for (let li of studentList) li.classList.remove("active");
+                studentList[studentId - 1].classList.add("active");
+
                 document.getElementById("status").innerText = "";
             }
         }
@@ -112,7 +116,7 @@
                     throw new Error("Failed to get pre-signed URL!");
                 }
 
-                // Step 2: Upload File to S3
+                // Step 2: Upload File to CloudFront (via Pre-Signed URL)
                 const upload = await fetch(data.url, {
                     method: "PUT",
                     body: file,
